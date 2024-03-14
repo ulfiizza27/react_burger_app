@@ -27,11 +27,11 @@ export default function OrderHeader({
           </div>
         )}
         <div className="flex items-center gap-4 max-w-sm w-full">
-          <Link to="/order?done=true">
+          <Link to="/order?done=true" className="w-full">
             <Button disabled={isEmptySelectedIngredients}>Order Burger</Button>
           </Link>
           {!isEmptySelectedIngredients && (
-            <Button variant="secondary" onClick={onReset}>
+            <Button variant="secondary" onClick={onReset} className="px-8">
               Reset
             </Button>
           )}
