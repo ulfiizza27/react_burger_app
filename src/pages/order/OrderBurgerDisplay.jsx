@@ -1,9 +1,5 @@
-
-import {
-  BreadBottom,
-  BreadTop,
-  Ingredient
-} from "./ingredients";
+import React from "react";
+import { BreadBottom, BreadTop, Ingredient } from "./ingredients";
 
 export default function OrderBurgerDisplay({
   selectedIngredients = [],
@@ -13,7 +9,7 @@ export default function OrderBurgerDisplay({
     <section className="container mx-auto flex justify-center mb-14">
       <div className="flex flex-col gap-1 items-center">
         <BreadTop />
-        {selectedIngredients.reverse().map((id,idx) => (
+        {selectedIngredients.map((id, idx) => (
           <Ingredient key={idx} type={id} onClickX={() => removeIngredient(idx)} />
         ))}
         <BreadBottom />
