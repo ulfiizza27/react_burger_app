@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import OrderBurgerDisplay from "./OrderBurgerDisplay";
 import OrderHeader from "./OrderHeader";
 import OrderIngredientsPicker from "./OrderIngredientsPicker";
-import { Link, useLocation, useRoutes } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+
+// Import komponen pop up Summary Order
+import SummaryOrderPopup from "./SummaryOrderPopup";
 
 const allIngredients = [
   {
@@ -54,6 +57,9 @@ export default function OrderPage() {
   const [isReachMax, isReachMaxSet] = useState(false);
   const [isDone, isDoneSet] = useState(false);
 
+  // State untuk mengontrol tampilan pop up Summary Order
+  const [showSummary, setShowSummary] = useState(false);
+
   const { search } = useLocation();
 
   function manageIngredients(type, id, idx) {
@@ -80,9 +86,7 @@ export default function OrderPage() {
       });
       return allIngredients;
     }
-    
   }
-  
 
   useEffect(() => {
     if (selectedIngredients.length >= 10) {
@@ -95,6 +99,16 @@ export default function OrderPage() {
       isDoneSet(true);
     }
   }, [search]);
+
+  // Fungsi untuk menampilkan pop up Summary Order
+  const showSummaryOrder = () => {
+    setShowSummary(true);
+  };
+
+  // Fungsi untuk menyembunyikan pop up Summary Order
+  const hideSummaryOrder = () => {
+    setShowSummary(false);
+  };
 
   if (isDone)
     return (
@@ -117,6 +131,8 @@ export default function OrderPage() {
           });
           isReachMaxSet(false);
         }}        
+        // Memanggil fungsi showSummaryOrder saat tombol Order Burger ditekan
+        onOrder={showSummaryOrder}
       />
       <OrderBurgerDisplay
         selectedIngredients={selectedIngredients}
@@ -127,6 +143,15 @@ export default function OrderPage() {
         manageIngredients={(id) => manageIngredients("add", id)}
         isReachMax={isReachMax}
       />
+
+      {/* Menampilkan pop up Summary Order jika showSummary bernilai true */}
+      {showSummary && (
+        <SummaryOrderPopup
+          selectedIngredients={selectedIngredients}
+          allIngredients={allIngredients}
+          onClose={hideSummaryOrder}
+        />
+      )}
     </section>
   );
 }

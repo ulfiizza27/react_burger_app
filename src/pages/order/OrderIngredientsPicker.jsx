@@ -9,7 +9,7 @@ export default function OrderIngredientsPicker({
   const [selectedIngredients, setSelectedIngredients] = useState({});
 
   const handleIngredientClick = (itemId) => {
-    if (isReachMax || selectedIngredients[itemId] >= 3) return;
+    if (isReachMax || selectedIngredients[itemId] > 3) return;
     manageIngredients(itemId);
     setSelectedIngredients((prevState) => ({
       ...prevState,
