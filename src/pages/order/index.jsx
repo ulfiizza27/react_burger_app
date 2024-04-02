@@ -1,150 +1,93 @@
-import { useEffect, useState } from "react";
-import OrderBurgerDisplay from "./OrderBurgerDisplay";
-import OrderHeader from "./OrderHeader";
-import OrderIngredientsPicker from "./OrderIngredientsPicker";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-
-// Import komponen pop up Summary Order
+import { useDispatch, useSelector } from 'react-redux';
+import { addIngredient, removeIngredient, resetIngredients } from '../../store/slices/burgerIngredients.slice';
+import OrderHeader from "./OrderHeader";
+import OrderBurgerDisplay from "./OrderBurgerDisplay";
+import OrderIngredientsPicker from "./OrderIngredientsPicker";
 import SummaryOrderPopup from "./SummaryOrderPopup";
 
-const allIngredients = [
-  {
-    id: "cheese",
-    name: "Cheese",
-    price: 5000,
-    quantity: 0,
-  },
-  {
-    id: "lettuce",
-    name: "Lettuce",
-    price: 1000,
-    quantity: 0,
-  },
-  {
-    id: "tomato",
-    name: "Tomato",
-    price: 2500,
-    quantity: 0,
-  },
-  {
-    id: "pickles",
-    name: "Pickles",
-    price: 2000,
-    quantity: 0,
-  },
-  {
-    id: "meat",
-    name: "Meat",
-    price: 14000,
-    quantity: 0,
-  },
-  {
-    id: "mayo",
-    name: "Mayo",
-    price: 4000,
-    quantity: 0,
-  },
-  {
-    id: "sauce",
-    name: "Sauce",
-    price: 4000,
-    quantity: 0,
-  },
-];
-
 export default function OrderPage() {
-  const [selectedIngredients, selectedIngredientsSet] = useState([]);
-  const [isReachMax, isReachMaxSet] = useState(false);
-  const [isDone, isDoneSet] = useState(false);
-
-  // State untuk mengontrol tampilan pop up Summary Order
+  const dispatch = useDispatch();
+  const allIngredients = useSelector(state => state.burgerIngredients.ingredients);
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [isReachMax, setIsReachMax] = useState(false);
+  const [isDone, setIsDone] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
-
   const { search } = useLocation();
-
-  function manageIngredients(type, id, idx) {
-    if (type === "add") {
-      const ingredientIndex = allIngredients.findIndex((item) => item.id === id);
-      const updatedIngredients = [...allIngredients];
-      updatedIngredients[ingredientIndex].quantity += 1;
-      selectedIngredientsSet((prev) => [...prev, id]);
-      return updatedIngredients;
-    }
-    if (type === "remove") {
-      selectedIngredientsSet((prev) => {
-        const filtered = [...prev].filter((_, index) => index !== idx);
-        const updatedIngredients = [...allIngredients];
-        const ingredientId = prev[idx];
-        const ingredientIndex = updatedIngredients.findIndex((item) => item.id === ingredientId);
-        
-        // Memastikan quantity tidak kurang dari 0
-        if (updatedIngredients[ingredientIndex].quantity > 0) {
-          updatedIngredients[ingredientIndex].quantity -= 1;
-        }
-        
-        return filtered;
-      });
-      return allIngredients;
-    }
-  }
 
   useEffect(() => {
     if (selectedIngredients.length >= 10) {
-      isReachMaxSet(true);
+      setIsReachMax(true);
+    } else {
+      setIsReachMax(false);
     }
   }, [selectedIngredients]);
 
   useEffect(() => {
     if (new URLSearchParams(search).get("done") === "true") {
-      isDoneSet(true);
+      setIsDone(true);
     }
   }, [search]);
 
-  // Fungsi untuk menampilkan pop up Summary Order
+  const manageIngredients = (type, id, idx) => {
+    if (type === "add") {
+      dispatch(addIngredient({ id }));
+      setSelectedIngredients(prevIngredients => [...prevIngredients, id]);
+    }
+    if (type === "remove") {
+      dispatch(removeIngredient({ id }));
+      setSelectedIngredients(prevIngredients => {
+        const updatedIngredients = [...prevIngredients];
+        const index = updatedIngredients.indexOf(id);
+        if (index !== -1) {
+          updatedIngredients.splice(index, 1);
+        }
+        return updatedIngredients;
+      });
+    }
+  };
+
+  const resetOrder = () => {
+    setSelectedIngredients([]);
+    dispatch(resetIngredients());
+    setIsReachMax(false);
+  };
+
   const showSummaryOrder = () => {
     setShowSummary(true);
   };
 
-  // Fungsi untuk menyembunyikan pop up Summary Order
   const hideSummaryOrder = () => {
     setShowSummary(false);
   };
 
-  if (isDone)
+  if (isDone) {
     return (
       <div>
-        <h1>Your order has been received</h1>
-        <Link to="/">Back to home</Link>
+        <h1>Pesanan Anda telah diterima</h1>
+        <Link to="/">Kembali ke halaman utama</Link>
       </div>
     );
+  }
 
   return (
     <section>
       <OrderHeader
         allIngredients={allIngredients}
         selectedIngredients={selectedIngredients}
-        onReset={() => {
-          selectedIngredientsSet([]);
-          // Reset quantities
-          allIngredients.forEach((item) => {
-            item.quantity = 0;
-          });
-          isReachMaxSet(false);
-        }}        
-        // Memanggil fungsi showSummaryOrder saat tombol Order Burger ditekan
+        onReset={resetOrder}
         onOrder={showSummaryOrder}
       />
       <OrderBurgerDisplay
         selectedIngredients={selectedIngredients}
-        removeIngredient={(idx) => manageIngredients("remove", undefined, idx)}
+        removeIngredient={manageIngredients}
       />
       <OrderIngredientsPicker
         allIngredients={allIngredients}
-        manageIngredients={(id) => manageIngredients("add", id)}
+        manageIngredients={manageIngredients}
         isReachMax={isReachMax}
       />
-
-      {/* Menampilkan pop up Summary Order jika showSummary bernilai true */}
       {showSummary && (
         <SummaryOrderPopup
           selectedIngredients={selectedIngredients}

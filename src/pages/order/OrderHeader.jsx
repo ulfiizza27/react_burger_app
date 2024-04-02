@@ -1,24 +1,20 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { resetIngredients } from "../../store/slices/burgerIngredients.slice";
 import Button from "../../components/Button";
 import { formatNumber } from "../../utils/helper";
-import SummaryOrderPopup from "./SummaryOrderPopup";
 
-export default function OrderHeader({
-  allIngredients = [],
-  selectedIngredients = [],
-  onReset,
-}) {
+export default function OrderHeader() {
+  const allIngredients = useSelector(state => state.burgerIngredients.ingredients);
+  const selectedIngredients = useSelector(state => state.burgerIngredients.ingredients.filter(item => item.quantity > 0));
+  const dispatch = useDispatch();
+
   const isEmptySelectedIngredients = selectedIngredients.length === 0;
   const [showSummary, setShowSummary] = useState(false);
 
   const totalCost = () => {
-    const filterBySelectedIngredients = selectedIngredients.map(
-      (id) => allIngredients.find((item) => item?.id === id)?.price
-    );
-    return `Rp${formatNumber(
-      filterBySelectedIngredients.reduce((a, b) => a + b, 0)
-    )}`;
+    const filterBySelectedIngredients = selectedIngredients.map(item => item.price * item.quantity);
+    return `Rp${formatNumber(filterBySelectedIngredients.reduce((a, b) => a + b, 0))}`;
   };
 
   const handleOrderClick = () => {
@@ -44,7 +40,7 @@ export default function OrderHeader({
             Order Burger
           </Button>
           {!isEmptySelectedIngredients && (
-            <Button variant="secondary" onClick={onReset} className="px-8">
+            <Button variant="secondary" onClick={() => dispatch(resetIngredients())} className="px-8">
               Reset
             </Button>
           )}
@@ -55,9 +51,9 @@ export default function OrderHeader({
           <div className="bg-white p-8 rounded-lg">
             <h2 className="text-2xl font-bold mb-4">Summary Order</h2>
             <ul>
-              {selectedIngredients.map((id) => (
-                <li key={id}>
-                  {allIngredients.find((item) => item.id === id)?.name}: Rp{formatNumber(allIngredients.find((item) => item.id === id)?.price)} x {allIngredients.find((item) => item.id === id)?.quantity} = Rp{formatNumber(allIngredients.find((item) => item.id === id)?.price * allIngredients.find((item) => item.id === id)?.quantity)}
+              {selectedIngredients.map((item) => (
+                <li key={item.id}>
+                  {item.name}: Rp{formatNumber(item.price)} x {item.quantity} = Rp{formatNumber(item.price * item.quantity)}
                 </li>
               ))}
             </ul>
