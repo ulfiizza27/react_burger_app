@@ -12,6 +12,7 @@ import Help from "./pages/help";
 import Navbar from "./components/Navbar";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import OrderPage from "./pages/order";
+import Post from "./pages/post";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about-us" element={<About />} />
         <Route path="/order" element={<OrderPage />} />
+        <Route path="/post" element={<Post />} />
       </Routes>
     </div>
   );
